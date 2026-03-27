@@ -11,6 +11,7 @@ enum Framework {
 fn main() -> Result<()> {
     // 1. Detect Framework
     let framework = detect_framework()?;
+    // Set folder name and root directory based on detected framework
     let (folder_name, root_dir) = match framework {
         Framework::Foundry => ("Foundry", "out"),
         Framework::Hardhat => ("Hardhat", "artifacts/contracts"),
@@ -29,20 +30,34 @@ fn main() -> Result<()> {
     // Extract file names for user selection
     let file_names: Vec<String> = abi_files
         .iter()
-        .map(|p| p.file_name().unwrap().to_string_lossy().into_owned())
+        .map(|p| {
+            p.file_name()
+                .unwrap_or(std::ffi::OsStr::new(""))
+                .to_string_lossy()
+                .into_owned()
+        })
         .collect();
 
     // 3. Ask user to select a file
     let selection = Select::new("Select the ABI JSON file to convert:", file_names).prompt()?;
 
+    // 4. Find the full path of the selected file
     let selected_path = abi_files
         .iter()
-        .find(|p| p.to_str().unwrap().contains(&selection))
+        .find(|p| p.to_str().unwrap_or("").contains(&selection))
         .context("Failed to locate selected file path")?;
 
-    // Suggest default output file name by replacing .json with .ts
-    let default_output = selection.replace(".json", ".ts");
-    // 4. Ask for output file name
+    // Suggest default output file name by replacing .json with .ts (example default: MyContractAbiTypes.ts)
+    let default_output_str = &selected_path
+        .file_stem()
+        .unwrap_or(std::ffi::OsStr::new("Output"))
+        .to_string_lossy()
+        .into_owned();
+
+    // Append "AbiTypes.ts" to the default output name
+    let default_output = format!("{}AbiTypes.ts", default_output_str);
+
+    // 5. Ask for output file name
     let output_name = Text::new("Enter the output TypeScript file name:")
         .with_default(&default_output)
         .prompt()?;
