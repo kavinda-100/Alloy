@@ -84,12 +84,32 @@ fn main() -> Result<()> {
 
 /// Detects whether the current directory is a Foundry or Hardhat project by checking for specific files.
 fn detect_framework() -> Result<Framework> {
+    // Check for both Foundry and Hardhat indicators first to handle cases where both might be present
+    if Path::new("foundry.toml").exists() && Path::new("hardhat.config.ts").exists()
+        || Path::new("hardhat.config.js").exists()
+    {
+        // choices
+        let framework_choice: Vec<String> = vec!["Foundry".to_string(), "Hardhat".to_string()];
+
+        // ask user to choose which framework to use for ABI extraction
+        let framework_choice = Select::new("Both Foundry and Hardhat project structures detected. Which one do you want to use for ABI extraction?", framework_choice)
+            .prompt()?;
+
+        // Return the user's choice as the detected framework
+        match framework_choice.as_str() {
+            "Foundry" => Ok(Framework::Foundry),
+            "Hardhat" => Ok(Framework::Hardhat),
+            _ => Err(anyhow::anyhow!("Invalid framework choice")),
+        }
+    }
     // Check for Foundry indicators first
-    if Path::new("foundry.toml").exists() || Path::new("out").exists() {
+    else if Path::new("foundry.toml").exists() && Path::new("out").exists() {
         Ok(Framework::Foundry)
     }
     // Check for Hardhat indicators next
-    else if Path::new("hardhat.config.ts").exists() || Path::new("hardhat.config.js").exists() {
+    else if Path::new("hardhat.config.ts").exists()
+        || Path::new("hardhat.config.js").exists() && Path::new("artifacts").exists()
+    {
         Ok(Framework::Hardhat)
     }
     // If neither is detected, return an error
