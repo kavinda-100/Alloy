@@ -1,26 +1,26 @@
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
-struct AbiRoot {
-    abi: Vec<AbiItem>,
+pub struct AbiRoot {
+    pub abi: Vec<AbiItem>,
 }
 
 #[derive(Deserialize, Debug)]
-struct AbiItem {
+pub struct AbiItem {
     #[serde(rename = "type")]
-    item_type: String,
-    name: Option<String>,
-    inputs: Option<Vec<AbiParameter>>,
-    outputs: Option<Vec<AbiParameter>>,
+    pub item_type: String,
+    pub name: Option<String>,
+    pub inputs: Option<Vec<AbiParameter>>,
+    pub outputs: Option<Vec<AbiParameter>>,
     #[serde(rename = "stateMutability")]
-    state_mutability: Option<String>,
+    pub state_mutability: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
-struct AbiParameter {
-    name: String,
+pub struct AbiParameter {
+    pub name: String,
     #[serde(rename = "type")]
-    param_type: String,
+    pub param_type: String,
     #[serde(rename = "internalType")]
-    internal_type: Option<String>,
+    pub internal_type: Option<String>,
 }
