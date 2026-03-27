@@ -37,16 +37,7 @@ fn main() -> Result<()> {
     );
 
     // Initialize a progress spinner while we search for ABI files
-    let pb = ProgressBar::new_spinner();
-    // Custom spinner style with more visually appealing ticks
-    pb.set_style(
-        ProgressStyle::default_spinner()
-            .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"])
-            .template("{spinner:.cyan} {msg}")?,
-    );
-
-    pb.set_message("Scanning for ABI files...");
-    pb.enable_steady_tick(Duration::from_millis(80));
+    let pb = create_spinner("Scanning for ABI files...")?;
 
     // 2. Find ABI JSON files
     // We filter for .json and ignore common metadata or standard library files
@@ -90,14 +81,7 @@ fn main() -> Result<()> {
         .prompt()?;
 
     // Initialize a progress spinner for the generation process
-    let gen_pb = ProgressBar::new_spinner();
-    gen_pb.set_style(
-        ProgressStyle::default_spinner()
-            .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"])
-            .template("{spinner:.cyan} {msg}")?,
-    );
-    gen_pb.set_message(format!("Processing {} -> {}...", selection, output_name));
-    gen_pb.enable_steady_tick(Duration::from_millis(80));
+    let gen_pb = create_spinner(format!("Processing {} -> {}...", selection, output_name))?;
 
     // 6. Read the selected ABI JSON file and parse it
     let file_content = fs::read_to_string(&selected_path)?;
@@ -192,4 +176,17 @@ fn find_abi_files(root: &Path) -> Result<Vec<PathBuf>> {
         }
     }
     Ok(files)
+}
+
+/// Creates and returns a styled progress spinner with the specified message.
+fn create_spinner(message: impl Into<String>) -> Result<ProgressBar> {
+    let pb = ProgressBar::new_spinner();
+    pb.set_style(
+        ProgressStyle::default_spinner()
+            .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"])
+            .template("{spinner:.cyan} {msg}")?,
+    );
+    pb.set_message(message.into());
+    pb.enable_steady_tick(Duration::from_millis(80));
+    Ok(pb)
 }
