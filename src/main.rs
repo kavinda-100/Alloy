@@ -1,7 +1,13 @@
 use anyhow::Result;
 use inquire::{Select, Text};
+use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
+
+use crate::utils::dtos::AbiRoot;
+use crate::utils::{generate_typescript_content, write_typescript_file};
+
+mod utils;
 
 enum Framework {
     Foundry,
@@ -53,19 +59,57 @@ fn main() -> Result<()> {
 
     println!("Processing {} -> {}...", selection, output_name);
 
-    // logic to parse ABI and write to file would go here
+    // 6. Read the selected ABI JSON file and parse it
+    let file_content = fs::read_to_string(&selected_path)?;
+    let abi_root: AbiRoot = serde_json::from_str(&file_content)?;
+
+    // Use the selected file stem as the contract name (e.g. Token.json -> Token)
+    let contract_name = selected_path
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("Contract");
+
+    // 7. Generate TypeScript content from the ABI
+    let ts_code = generate_typescript_content(contract_name, abi_root);
+
+    // 8. Write the generated TypeScript content to a file
+    write_typescript_file(&output_name, ts_code)?;
+    println!(
+        "✔ TypeScript definitions generated successfully in types/{}",
+        output_name
+    );
 
     Ok(())
 }
 
 /// Detects whether the current directory is a Foundry or Hardhat project by checking for specific files.
 fn detect_framework() -> Result<Framework> {
+    // Check for both Foundry and Hardhat indicators first to handle cases where both might be present
+    if Path::new("foundry.toml").exists() && Path::new("hardhat.config.ts").exists()
+        || Path::new("hardhat.config.js").exists()
+    {
+        // choices
+        let framework_choice: Vec<String> = vec!["Foundry".to_string(), "Hardhat".to_string()];
+
+        // ask user to choose which framework to use for ABI extraction
+        let framework_choice = Select::new("Both Foundry and Hardhat project structures detected. Which one do you want to use for ABI extraction?", framework_choice)
+            .prompt()?;
+
+        // Return the user's choice as the detected framework
+        match framework_choice.as_str() {
+            "Foundry" => Ok(Framework::Foundry),
+            "Hardhat" => Ok(Framework::Hardhat),
+            _ => Err(anyhow::anyhow!("Invalid framework choice")),
+        }
+    }
     // Check for Foundry indicators first
-    if Path::new("foundry.toml").exists() || Path::new("out").exists() {
+    else if Path::new("foundry.toml").exists() && Path::new("out").exists() {
         Ok(Framework::Foundry)
     }
     // Check for Hardhat indicators next
-    else if Path::new("hardhat.config.ts").exists() || Path::new("hardhat.config.js").exists() {
+    else if Path::new("hardhat.config.ts").exists()
+        || Path::new("hardhat.config.js").exists() && Path::new("artifacts").exists()
+    {
         Ok(Framework::Hardhat)
     }
     // If neither is detected, return an error
