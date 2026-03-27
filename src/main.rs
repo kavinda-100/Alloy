@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use inquire::{Select, Text};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
@@ -28,24 +28,13 @@ fn main() -> Result<()> {
     }
 
     // Extract file names for user selection
-    let file_names: Vec<String> = abi_files
-        .iter()
-        .map(|p| {
-            p.file_name()
-                .unwrap_or(std::ffi::OsStr::new(""))
-                .to_string_lossy()
-                .into_owned()
-        })
-        .collect();
+    let file_choices: Vec<String> = abi_files.iter().map(|p| p.display().to_string()).collect();
 
     // 3. Ask user to select a file
-    let selection = Select::new("Select the ABI JSON file to convert:", file_names).prompt()?;
+    let selection = Select::new("Select the ABI JSON file to convert:", file_choices).prompt()?;
 
     // 4. Find the full path of the selected file
-    let selected_path = abi_files
-        .iter()
-        .find(|p| p.to_str().unwrap_or("").contains(&selection))
-        .context("Failed to locate selected file path")?;
+    let selected_path = PathBuf::from(&selection);
 
     // Suggest default output file name by replacing .json with .ts (example default: MyContractAbiTypes.ts)
     let default_output_str = &selected_path
@@ -99,10 +88,11 @@ fn find_abi_files(root: &Path) -> Result<Vec<PathBuf>> {
                 .unwrap_or(std::ffi::OsStr::new(""))
                 .to_string_lossy();
 
+            // Check if the file is part of forge-std (common standard library for Foundry)
+            let is_forge_std = path.components().any(|c| c.as_os_str() == "forge-std");
+
             // Filter out internal build files or standard libraries
-            if !file_name.ends_with(".metadata.json")
-                && !path.to_str().unwrap_or("").contains("std")
-            {
+            if !file_name.ends_with(".metadata.json") && !is_forge_std {
                 files.push(path.to_path_buf());
             }
         }
