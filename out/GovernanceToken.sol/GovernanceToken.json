@@ -1,0 +1,116 @@
+{
+	"abi": [
+		{
+			"type": "constructor",
+			"inputs": [
+				{ "name": "_name", "type": "string", "internalType": "string" },
+				{
+					"name": "_symbol",
+					"type": "string",
+					"internalType": "string"
+				},
+				{
+					"name": "_initialSupply",
+					"type": "uint256",
+					"internalType": "uint256"
+				}
+			],
+			"stateMutability": "nonpayable"
+		},
+		{
+			"type": "function",
+			"name": "delegateWithSig",
+			"inputs": [
+				{
+					"name": "delegatee",
+					"type": "address",
+					"internalType": "address"
+				},
+				{
+					"name": "nonce",
+					"type": "uint256",
+					"internalType": "uint256"
+				},
+				{
+					"name": "expiry",
+					"type": "uint256",
+					"internalType": "uint256"
+				},
+				{ "name": "v", "type": "uint8", "internalType": "uint8" },
+				{ "name": "r", "type": "bytes32", "internalType": "bytes32" },
+				{ "name": "s", "type": "bytes32", "internalType": "bytes32" }
+			],
+			"outputs": [],
+			"stateMutability": "nonpayable"
+		},
+		{
+			"type": "function",
+			"name": "getAccountSnapshot",
+			"inputs": [
+				{
+					"name": "account",
+					"type": "address",
+					"internalType": "address"
+				}
+			],
+			"outputs": [
+				{
+					"name": "isRegistered",
+					"type": "bool",
+					"internalType": "bool"
+				},
+				{
+					"name": "votingPower",
+					"type": "uint256",
+					"internalType": "uint256"
+				},
+				{
+					"name": "lastActionBlock",
+					"type": "uint64",
+					"internalType": "uint64"
+				},
+				{
+					"name": "proposals",
+					"type": "uint256[]",
+					"internalType": "uint256[]"
+				}
+			],
+			"stateMutability": "view"
+		},
+		{
+			"type": "function",
+			"name": "multicall",
+			"inputs": [
+				{ "name": "data", "type": "bytes[]", "internalType": "bytes[]" }
+			],
+			"outputs": [
+				{
+					"name": "results",
+					"type": "bytes[]",
+					"internalType": "bytes[]"
+				}
+			],
+			"stateMutability": "payable"
+		},
+		{
+			"type": "function",
+			"name": "setMetadata",
+			"inputs": [
+				{ "name": "key", "type": "bytes32", "internalType": "bytes32" },
+				{ "name": "value", "type": "string", "internalType": "string" }
+			],
+			"outputs": [
+				{ "name": "success", "type": "bool", "internalType": "bool" }
+			],
+			"stateMutability": "nonpayable"
+		},
+		{
+			"type": "receive",
+			"stateMutability": "payable"
+		},
+		{
+			"type": "fallback",
+			"stateMutability": "payable"
+		}
+	]
+}

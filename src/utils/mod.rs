@@ -57,8 +57,11 @@ pub fn generate_typescript_content(contract_name: &str, abi_root: AbiRoot) -> St
 
 // Utility function to write the generated TypeScript content to a file
 pub fn write_typescript_file(output_name: &str, content: String) -> std::io::Result<()> {
-    // Directory name for output (e.g., "types" or "generated")
+    // Directory name for output.
     let output_dir = "types";
+
+    // Create the output directory if it doesn't exist
+    std::fs::create_dir_all(output_dir)?;
 
     // check if output_name ends with .ts, if not append it
     let output_name = if output_name.ends_with(".ts") {
@@ -67,11 +70,14 @@ pub fn write_typescript_file(output_name: &str, content: String) -> std::io::Res
         format!("{}.ts", output_name)
     };
 
-    // check if file already exists, if so, remove it
-    if std::path::Path::new(&output_name).exists() {
-        std::fs::remove_file(&output_name)?;
+    // Construct the full output path
+    let output_path = std::path::Path::new(output_dir).join(&output_name);
+
+    // check if file already exists inside the output directory, if so, remove it
+    if output_path.exists() {
+        std::fs::remove_file(&output_path)?;
     }
 
     // write the content to the file
-    std::fs::write(output_name, content)
+    std::fs::write(output_path, content)
 }
