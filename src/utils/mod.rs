@@ -57,6 +57,9 @@ pub fn generate_typescript_content(contract_name: &str, abi_root: AbiRoot) -> St
 
 // Utility function to write the generated TypeScript content to a file
 pub fn write_typescript_file(output_name: &str, content: String) -> std::io::Result<()> {
+    // Directory name for output (e.g., "types" or "generated")
+    let output_dir = "types";
+
     // check if output_name ends with .ts, if not append it
     let output_name = if output_name.ends_with(".ts") {
         output_name.to_string()
