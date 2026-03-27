@@ -1,5 +1,6 @@
 pub mod dtos;
 pub mod sol_to_ts_mapper;
+pub mod util;
 
 use crate::utils::dtos::AbiRoot;
 use crate::utils::sol_to_ts_mapper::map_solidity_to_ts;
