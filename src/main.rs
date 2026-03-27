@@ -3,6 +3,8 @@ use inquire::{Select, Text};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
+mod utils;
+
 enum Framework {
     Foundry,
     Hardhat,
