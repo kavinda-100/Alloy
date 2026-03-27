@@ -13,6 +13,7 @@ pub struct AbiItem {
     pub inputs: Option<Vec<AbiParameter>>,
     pub outputs: Option<Vec<AbiParameter>>,
     #[serde(rename = "stateMutability")]
+    #[allow(dead_code)]
     pub state_mutability: Option<String>,
 }
 
@@ -22,5 +23,6 @@ pub struct AbiParameter {
     #[serde(rename = "type")]
     pub param_type: String,
     #[serde(rename = "internalType")]
+    #[allow(dead_code)]
     pub internal_type: Option<String>,
 }
