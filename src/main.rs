@@ -1,10 +1,14 @@
 use anyhow::Result;
+use colored::*;
+use indicatif::{ProgressBar, ProgressStyle};
 use inquire::{Select, Text};
-use std::fs;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
+use std::{fs, thread};
 use walkdir::WalkDir;
 
 use crate::utils::dtos::AbiRoot;
+use crate::utils::util::print_banner;
 use crate::utils::{generate_typescript_content, write_typescript_file};
 
 mod utils;
@@ -15,6 +19,9 @@ enum Framework {
 }
 
 fn main() -> Result<()> {
+    // Print the banner
+    print_banner();
+
     // 1. Detect Framework
     let framework = detect_framework()?;
     // Set folder name and root directory based on detected framework
@@ -23,21 +30,46 @@ fn main() -> Result<()> {
         Framework::Hardhat => ("Hardhat", "artifacts/contracts"),
     };
 
-    println!("✔ Detected {} project structure.", folder_name);
+    println!(
+        "{} Detected {} project structure.",
+        "✔".green(),
+        folder_name
+    );
+
+    // Initialize a progress spinner while we search for ABI files
+    let pb = ProgressBar::new_spinner();
+    // Custom spinner style with more visually appealing ticks
+    pb.set_style(
+        ProgressStyle::default_spinner()
+            .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"])
+            .template("{spinner:.cyan} {msg}")?,
+    );
+
+    pb.set_message("Scanning for ABI files...");
+    pb.enable_steady_tick(Duration::from_millis(80));
 
     // 2. Find ABI JSON files
     // We filter for .json and ignore common metadata or standard library files
     let abi_files = find_abi_files(Path::new(root_dir))?;
 
+    // Artificial delay for smooth UX.
+    thread::sleep(Duration::from_millis(500));
+    pb.finish_and_clear();
+
     if abi_files.is_empty() {
-        return Err(anyhow::anyhow!("No ABI JSON files found in {}.", root_dir));
+        println!("{} No ABI JSON files found in {}.", "✘".red(), root_dir);
+        return Ok(());
     }
 
     // Extract file names for user selection
     let file_choices: Vec<String> = abi_files.iter().map(|p| p.display().to_string()).collect();
 
     // 3. Ask user to select a file
-    let selection = Select::new("Select the ABI JSON file to convert:", file_choices).prompt()?;
+    let selection = Select::new(
+        &format!("{}", "Which contract do you want to typify?".bold()),
+        file_choices,
+    )
+    .prompt()?;
 
     // 4. Find the full path of the selected file
     let selected_path = PathBuf::from(&selection);
@@ -57,7 +89,15 @@ fn main() -> Result<()> {
         .with_default(&default_output)
         .prompt()?;
 
-    println!("Processing {} -> {}...", selection, output_name);
+    // Initialize a progress spinner for the generation process
+    let gen_pb = ProgressBar::new_spinner();
+    gen_pb.set_style(
+        ProgressStyle::default_spinner()
+            .tick_strings(&["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"])
+            .template("{spinner:.cyan} {msg}")?,
+    );
+    gen_pb.set_message(format!("Processing {} -> {}...", selection, output_name));
+    gen_pb.enable_steady_tick(Duration::from_millis(80));
 
     // 6. Read the selected ABI JSON file and parse it
     let file_content = fs::read_to_string(&selected_path)?;
@@ -74,9 +114,19 @@ fn main() -> Result<()> {
 
     // 8. Write the generated TypeScript content to a file
     write_typescript_file(&output_name, ts_code)?;
+
+    // Artificial delay for smooth UX.
+    thread::sleep(Duration::from_millis(500));
+    gen_pb.finish_and_clear();
+
+    // 9. Print success message with the output file name
     println!(
-        "✔ TypeScript definitions generated successfully in types/{}",
-        output_name
+        "\n{} {} {} {} {}",
+        "✨".yellow(),
+        "Success!".green().bold(),
+        "Generated".white(),
+        output_name.cyan().underline(),
+        "from the forge.".white().italic()
     );
 
     Ok(())
