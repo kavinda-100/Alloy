@@ -2,6 +2,14 @@
 name = "Alloy"
 version = "0.1.0"
 edition = "2024"
+authors = ["Kavinda Rathnayake <kavindarathnayake100@gmail.com>"]
+description = "A high-performance CLI to sync Smart Contract ABIs with TypeScript types."
+readme = "README.md"
+repository = "https://github.com/kavinda-100/Alloy"
+homepage = "https://github.com/kavinda-100/Alloy"
+license = "MIT"
+keywords = ["web3", "ethereum", "Rust", "typescript", "solidity", "foundry", "abi", "cli", "developer-tools"]
+categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
 inquire = "0.9.4"
