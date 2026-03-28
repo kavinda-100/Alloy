@@ -120,7 +120,14 @@ export type ERC20 = {
 │ ├── sol_to_ts_mapper.rs
 │ └── util.rs
 └── types/ // Generated TypeScript files
+|-- README.md
+|-- .gitignore
+|-- Cargo.toml
+|-- hardhat.config.ts // Hardhat config
+|-- foundry.toml // Foundry config
 ```
+
+- Important: When Run the project locally, ensure you have either foundry.toml with out directory or hardhat.config.ts/js with artifacts directory in the same root as the CLI for it to detect the framework and find ABI files.
 
 ## Notes
 
