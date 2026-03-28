@@ -1,1 +1,6 @@
 /target
+
+# Blockchain build outputs
+artifacts/
+out/
+cache/
