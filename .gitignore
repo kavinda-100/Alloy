@@ -1,1 +1,10 @@
 /target
+
+# Blockchain build outputs
+artifacts/
+out/
+cache/
+types/
+foundry.toml
+hardhat.config.js
+hardhat-config.ts
